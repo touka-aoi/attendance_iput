@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import webbrowser
 import json
+import os
 
 # print("ユーザー名を入力\n")
 # usrname = input()
@@ -18,12 +19,17 @@ import json
 usrname = ""
 password =  ""
 
+#bat呼び出し用に実行しているディレクトリを取得
+cwd = os.path.dirname(__file__)
+jsn = "UserData.json"
+cwdjsn = cwd + "\\" + jsn
+#print(cwd) デバグ用
 
 #Jsonとかやりたいな...
-with open("UserData.json") as fr:
+with open(cwdjsn) as fr:
     js = json.load(fr)
     if (js["UserData"]["usrname"] == None):
-        with open("UserData.json", "w") as fw:
+        with open(cwdjsn, "w") as fw:
             usr = input("ユーザー名を入力してください")
             usrname = usr
             js["UserData"]["usrname"] = usr
@@ -31,7 +37,7 @@ with open("UserData.json") as fr:
     else:
         usrname = js["UserData"]["usrname"]
     if (js["UserData"]["password"] == None):
-        with open("UserData.json", "w") as fw:
+        with open(cwdjsn, "w") as fw:
             pss = input("パスワードを入力してください")
             password = pss
             js["UserData"]["password"] = pss
@@ -73,10 +79,6 @@ res = session.post(url, data=info, cookies = cookie)
 
 #ログイン後情報取得
 bs = BeautifulSoup(res.text, "html.parser")
-
-test = session.get("https://lms.iput.ac.jp/mod/assign/view.php?id=8071&action=editsubmission")
-testbs = BeautifulSoup(test.text, "html.parser")
-print(testbs.find("input", {"type" : "hidden"})["value"])
 
 #授業名全取得
 selected = bs.select("h3 > a[class=coursecard-coursename]")
@@ -143,7 +145,17 @@ b = transAttend(a2)
 cc = getAttend(b)
 #print(cc) #s出席URL取得
 
-#確認用URL
+if not "めんどくせ":
+    uurl = "https://lms.iput.ac.jp/mod/assign/view.php?id=8071&action=editsubmission"
+    test = session.get(uurl)
+    testbs = BeautifulSoup(test.text, "html.parser")
+    sesskey = testbs.find("input", {"type" : "hidden", "name" : "sesskey" })["value"]
+    sessid = testbs.find("input", {"type" : "hidden", "name" : "sessid" })["value"]
+    qfmod = testbs.find("input", {"type": "hidden", "name": "qf__mod_assign_submission_form"})["value"]
+
+
+
+
 dd = IputComfirm(b)
 #print(dd)
 
